@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="
+    output.css">
+    <title>Sudoku</title>
+    <link rel="icon" type="image/x-icon" href="title.png">
+</head>
+
+<body class="bg-[#d3e9d3]">
+
+    <nav class="p-4 bg-[#3a7d7d]">
+        <h1 class="text-center md:text-left md:ml-16 font-bold text-3xl text-[#9CDBA6]">Sudoku</h1>
+    </nav>
+    <div class="p-4 flex justify-center">
+        <div class="bg-[#589b83] min-w-[450px] h-[50px] rounded-md flex flex-wrap justify-evenly content-center">
+            <button class="text-Black bg-white rounded-full p-2" onclick="undo()">Undo</button>
+            <button class="text-Black bg-white rounded-full p-2">Erase</button>
+            <button class="text-Black bg-white rounded-full p-2">Notes</button>
+            <button class="text-Black bg-white rounded-full p-2" onclick="hint()">Hint</button>
+
+        </div>
+    </div>
+
+    <div class="p-4 flex justify-center flex-wrap">
+        <div id="board" class="bg-[#589b83] min-w-[450px] max-w-[450px] min-h-[450px] max-h-[450px] py-2 rounded-md flex flex-wrap items-center justify-center relative">
+            <div class="h-[430px] w-[2px] bg-black left-[152px] absolute"></div>
+            <div class="h-[430px] w-[2px] bg-black right-[152px] absolute"></div>
+            <div class="w-[430px] h-[2px] bg-black top-[151px] absolute"></div>
+            <div class="w-[430px] h-[2px] bg-black bottom-[151px] absolute"></div>
+            <div id ="win"class="w-[100%] h-[100%]  bg-white absolute " >
+                <div class="align-center relative text-center  top-[50%]">
+                    Congratulations!
+                </div>
+            </div>
+            <div id ="loose"class="w-[100%] h-[100%]  bg-white absolute " >
+                <div class="align-center relative text-center  top-[50%]">
+                    Game Over!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center">
+        <div id="number"
+            class="bg-[#589b83] min-w-[450px] h-[50px] rounded-md flex flex-wrap justify-center content-center">
+        </div>
+    </div>
+
+    <div class="flex justify-center p-4">
+        <button class="text-Black bg-white rounded-md p-2 w-[150px]" onclick="restart()">Start Game</button>
+    </div>
+
+
+    <script>
+        document.getElementById("win").style.visibility = "hidden";
+        document.getElementById("loose").style.visibility = "hidden";
+        var mistake = 0;
+        var hint_count = 0;
+        class Solution {
+            ifsafe(board, row, col, k, size) {
+                for (let i = 0; i < size; i++) {
+                    if (board[i][col] == k)
+                        return false;
+                }
+                for (let i = 0; i < size; i++) {
+                    if (board[row][i] == k)
+                        return false;
+                }
+                let t = Math.sqrt(size);
+                let offset_i = row - row % t;
+                let offset_j = col - col % t;
+                let n = offset_i + t;
+                let m = offset_j + t;
+                for (let i = offset_i; i < n; i++) {
+                    for (let j = offset_j; j < m; j++) {
+                        if (board[i][j] == k)
+                            return false;
+                    }
+                }
+                return true;
+            }
+
+            solve(board) {
+                let size = board.length;
+                for (let i = 0; i < size; i++) {
+                    for (let j = 0; j < size; j++) {
+                        if (board[i][j] == 0) {
+                            for (let k = 1; k < 1 + size; k++) {
+                                if (this.ifsafe(board, i, j, k, size)) {
+                                    board[i][j] = k;
+                                    let isSolve = this.solve(board);
+                                    if (isSolve)
+                                        return true;
+                                    board[i][j] = 0;
+                                }
+                            }
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            solveSudoku(board) {
+                this.solve(board);
+            }
+            shuffel(arr) {
+                for (let i = 0; i < 9; i++) {
+                    let k = Math.floor(Math.random() * 9);
+                    let l = Math.floor(Math.random() * 9);
+                    [arr[k], arr[l]] = [arr[l], arr[k]];
+                }
+            }
+        }
+
+
+        
+
+        // function start(){
+            const alltiles = new Array();
+    let board = Array.from({ length: 9 }, () => Array(9).fill(0));
+    var input_board = Array.from({ length: 9 }, () => Array(9).fill(0));
+    var selected_arr;
+    var undo_arr ;
+    var undo_var; 
+
+            
+        
+        let s = new Solution();
+        
+        let arr = Array.from({ length: 9 }, (_, i) => i + 1);
+        let selectedElements =   Array.from(Array(45), () => 0)
+        let index_ = 0;
+        for(let m = 0;m<9;m++){ 
+            let array_1 = Array.from({ length: 9 }, (_, i) => i + m*9);
+            s.shuffel(array_1);
+            let t = 5;
+            
+            for(let i = 0; i < t;i++){
+                selectedElements[index_++] = array_1[i];
+            }
+        }
+        s.shuffel(arr);
+        s.solveSudoku(board);
+        selectedElements.sort((a, b) => a - b);
+        let index = 0;
+        let h = 1;
+        
+        for (let i = 0; i < 9; i++) {
+            for (let j = 0; j < 9; j++) {
+                if (selectedElements[index] === 9 * i + j) {
+                    input_board[i][j] = h;
+                    index++;
+                }
+            }
+        }
+        function undo() {
+            // if(undo_var != null) {
+                let x = selected_arr.i;
+                let y = selected_arr.j;
+               if(board[x][y] != alltiles[x][y].innerHTML) {
+                    
+                    alltiles[x][y].innerHTML ="";
+                    //input_board[x][y] = 0;
+                }
+            // }
+        }
+        var selec;
+        var counter = 0;
+        for (let i = 1; i <= 9; i++) {
+            let num = document.createElement("div")
+            num.id = i
+            num.innerText = i
+            num.classList.add("w-[36px]", "h-[36px]", "bg-white", "border-gray-500", "m-1", "rounded-md", "flex", "text-2xl", "justify-center", "text-center")
+            document.getElementById("number").appendChild(num)
+            num.addEventListener("click", enterValue);
+
+            function enterValue() {
+                let tile = document.getElementById(selec.toString());
+                let x = selected_arr.i;
+                let y = selected_arr.j;
+                
+                if (input_board[x][y] == 0 && alltiles[x][y].innerHTML != board[x][y]) {
+                    console.log(x, y)
+                    alltiles[x][y].innerHTML = event.srcElement.id;
+                    undo_var = alltiles[x][y];
+                    undo_arr = { x, y }
+                    if (board[x][y] != event.srcElement.id){
+                        tile.style.color = "red";
+                        mistake++;
+                        if(mistake == 3)
+                            gameOver();
+                    }
+                    else {
+                        tile.style.color = "black";
+                        input_board[x][y] = 1;
+                        counter++;
+                        for (let i = 0; i < 9; i++) {
+                            for (let j = 0; j < 9; j++) {
+                                if (alltiles[i][j].innerHTML == tile.innerHTML)
+                                    alltiles[i][j].style.backgroundColor = "#00ff22";
+                                else
+                                    alltiles[i][j].style.background = "white";
+                            }
+                        }
+                        if(counter == 36){
+                            gameOver();
+                        }
+                    }
+                }
+            }
+        }
+        var prev = null;
+        
+
+        
+        for (let j = 0; j < 9; j++) {
+            alltiles[j] = new Array();
+            for (let k = 0; k < 9; k++) {
+                let tile = document.createElement("div")
+                tile.id = j.toString() + "-" + k.toString()
+                tile.classList.add("w-[40px]", "h-[40px]", "bg-white", "border-gray-500", "m-1", "rounded-md", "flex", "text-2xl", "justify-center", "text-center",)
+                document.getElementById("board").appendChild(tile)
+                tile.addEventListener("click", myFunction);
+                if (input_board[j][k] == 1) {
+                    tile.innerHTML = board[j][k]
+                }
+
+                alltiles[j][k] = tile;
+
+                function myFunction(clicked_id) {
+                    let tile = document.getElementById(event.srcElement.id);
+                    selec = event.srcElement.id;
+                    selec = selec.toString();
+                    let i = selec[0];
+                    let j = selec[2];
+                    selected_arr = { i, j }
+
+
+                    if (tile.innerHTML != "") {
+                        for (let i = 0; i < 9; i++) {
+                            for (let j = 0; j < 9; j++) {
+                                if (alltiles[i][j].innerHTML == tile.innerHTML)
+                                    alltiles[i][j].style.backgroundColor = "#00ff22";
+                                else
+                                    alltiles[i][j].style.background = "white";
+                            }
+                        }
+                    }
+                    else {
+                        for (let i = 0; i < 9; i++) {
+                            for (let j = 0; j < 9; j++) {
+                                alltiles[i][j].style.background = "white";
+                            }
+                        }
+                        tile.style.backgroundColor = "#00ff22";
+                    }
+
+                }
+            }
+        }
+
+
+    
+    
+    // start();
+
+
+    function restart() {
+        location.reload();
+        
+        
+        //  "red";
+
+    }
+    
+       
+        function gameOver(){
+            if(mistake==3){
+                document.getElementById("loose").style.visibility = "visible";
+            }
+            else{
+                document.getElementById("win").style.visibility = "visible ";
+            }
+        }
+        function hint(){
+            if(hint_count <2){
+            let x = selected_arr.i;
+            let y = selected_arr.j;
+            console.log(input_board[x][y] = 1);
+            alltiles[x][y].innerHTML = board[x][y];
+            hint_count++;
+            }
+        }
+
+    </script>
+
+</body>
+
+</html>
